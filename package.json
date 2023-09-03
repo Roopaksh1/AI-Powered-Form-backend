@@ -1,0 +1,33 @@
+{
+  "name": "ai-powered-form-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Roopaksh1/AI-Powered-Form-backend.git"
+  },
+  "author": "Pulkit Sharma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Roopaksh1/AI-Powered-Form-backend/issues"
+  },
+  "homepage": "https://github.com/Roopaksh1/AI-Powered-Form-backend#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "email-validator": "^2.0.4",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "mongodb": "^5.7.0",
+    "mongoose": "^7.4.2",
+    "password-validator": "^5.3.0",
+    "pino": "^8.15.0",
+    "pino-pretty": "^10.2.0"
+  }
+}
