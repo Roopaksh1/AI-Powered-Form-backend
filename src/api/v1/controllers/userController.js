@@ -1,125 +1,127 @@
-const userOperations = require("../../../db/operations/userOperations");
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const userOperations = require('../../../db/operations/userOperations');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const passwordValidator = require('password-validator');
-const emailValidator = require("email-validator");
-const logger = require("../../../utils/logger");
-
-const passwordSchema = new passwordValidator();
-passwordSchema
-  .is().min(10)
-  .is().max(100)
-  .has().uppercase()
-  .has().lowercase()
-  .has().digits(1)
-  .has().not().spaces()
+const logger = require('../../../utils/logger');
+const asyncHandler = require('express-async-handler');
+const { body, validationResult } = require('express-validator');
 
 module.exports = {
-  async register(req, res) {
-    logger.debug('userController register() start');
-    const { email, password, name } = req.body;
-    const passwordValidation = passwordSchema.validate(password, { list: true });
-    const emailValidation = emailValidator.validate(email);
-    if (name == null) {
-      res.status(400).json({
-        error: "nameError",
-      })
-    } else if (passwordValidation.length > 0) {
-      res.status(400).json({
-        passwordValidation: passwordValidation
-      })
-    } else if (emailValidation == false) {
-      res.status(400).json({
-        emailValidation: "failed"
-      })
-    } else {
-      bcrypt
-        .hash(password, 10)
-        .then((hashedPassword) => {
-          const user = userOperations
-            .create({
-              name: name,
-              email: email,
-              password: hashedPassword,
-            })
-            .then((user) => {
-              if (user && user.email) {
-                res.status(201).send({ message: "user created", user });
-              } else if (user.code == 11000) {
-                res.status(409).send(user);
-              }
-            });
-        })
-        .catch((e) => {
-          res.status(500).send({
-            message: "not hashed",
-            e,
-          });
-        });
-    }
-  },
+  register: [
+    body('name')
+      .trim()
+      .escape()
+      .notEmpty()
+      .withMessage('Please add an username.')
+      .custom((value) => !/\s/.test(value))
+      .withMessage('No spaces are allowed in the username'),
+    body('email').trim().isEmail().withMessage('Please add an email'),
+    body('password')
+      .trim()
+      .notEmpty()
+      .withMessage('Password Required')
+      .isLength({ min: 8 })
+      .withMessage('Password must be atleast 8 characters long')
+      .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).*$/)
+      .withMessage(
+        'One uppercase, One lowercase and a number. Spaces are not allowed.'
+      ),
+    body('confirm-password')
+      .custom((value) => value === req.body.password)
+      .withMessage('Password not matching'),
 
-  async login(req, res) {
+    asyncHandler(async (req, res) => {
+      const error = validationResult(req);
+      if (!error.isEmpty()) {
+        res.status(400);
+        throw new Error(error.errors[0].msg);
+      }
+
+      logger.debug('userController register() start');
+      const { email, name } = req.body;
+      const password = await bcrypt.hash(password, 10);
+      const user = await userOperations.create({
+        name,
+        email,
+        password,
+      });
+      if (user.code === 11000) {
+        res.status(409);
+        throw new Error('A user with that email already exists');
+      }
+
+      // TODO jwt token and cookie
+
+      res.json({ auth: true, name: user.name });
+    }),
+  ],
+
+  login: asyncHandler(async (req, res) => {
     logger.debug('userController login() start');
     const { email, password } = req.body;
-    if (email == undefined) {
-      return res.status(500).send({
-        message: "INVALID DATA"
-      })
+    const user = userOperations.read({ email });
+    if (!user) {
+      res.status(401);
+      throw new Error('Invalid Email');
     }
-    userOperations.read({ email: email })
-      .then((user) => {
-        bcrypt.compare(password, user.password)
-          .then((passwordCheck) => {
-            if (!passwordCheck) {
-              return res.status(400).send({
-                message: "Password does not match",
-              })
-            }
-            const token = jwt.sign(
-              {
-                userId: user._id
-              },
-              process.env.TOKEN,
-              {
-                expiresIn: "8h"
-              }
-            );
-            res.status(200).send({
-              message: "Login Successful",
-              email: user.email,
-              token
-            })
-          })
-          .catch((e) => {
-            res.status(400).send({
-              message: 'Password does not match',
-              e
-            })
-          })
-      })
-      .catch((e) => {
-        res.status(404).send({
-          message: "user not found",
-          e
-        })
-      })
-  },
-  async update(req, res) {
-    logger.debug('userController update() start');
-    const obj = req.body;
-    const doc = await userOperations.update(obj);
-    res.json({
-      data: doc,
-    });
-  },
-  async delete(req, res) {
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      res.status(401);
+      throw new Error('Invalid Password');
+    }
+
+    // Generate token and add it to cookie
+    const token = jwt.sign(
+      {
+        userId: user._id,
+      },
+      process.env.TOKEN,
+      {
+        expiresIn: '8h',
+      }
+    );
+    res.json({ auth: true, name: user.name });
+  }),
+
+  update: [
+    body('name')
+      .trim()
+      .escape()
+      .notEmpty()
+      .withMessage('Please add an username.')
+      .custom((value) => !/\s/.test(value))
+      .withMessage('No spaces are allowed in the username'),
+    body('password')
+      .trim()
+      .notEmpty()
+      .withMessage('Password Required')
+      .isLength({ min: 8 })
+      .withMessage('Password must be atleast 8 characters long')
+      .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).*$/)
+      .withMessage(
+        'One uppercase, One lowercase and a number. Spaces are not allowed.'
+      ),
+
+    asyncHandler(async (req, res) => {
+      logger.debug('userController update() start');
+      const error = validationResult(req);
+      if (!error.isEmpty()) {
+        res.status(400);
+        throw new Error(error.errors[0].msg);
+      }
+      const obj = req.body;
+      const doc = await userOperations.update(obj);
+      res.json({
+        data: doc,
+      });
+    }),
+  ],
+  delete: asyncHandler(async (req, res) => {
     logger.debug('userController delete() start');
     const obj = req.body;
     const doc = await userOperations.delete(obj);
     res.json({
       data: doc,
     });
-  },
+  }),
 };
