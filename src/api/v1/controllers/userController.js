@@ -27,7 +27,7 @@ module.exports = {
         'One uppercase, One lowercase and a number. Spaces are not allowed.'
       ),
     body('confirm-password')
-      .custom((value) => value === req.body.password)
+      .custom((value, { req }) => value === req.body.password)
       .withMessage('Password not matching'),
 
     asyncHandler(async (req, res) => {
@@ -39,17 +39,19 @@ module.exports = {
 
       logger.debug('userController register() start');
       const { email, name } = req.body;
-      const password = await bcrypt.hash(password, 10);
-      const user = await userOperations.create({
-        name,
-        email,
-        password,
-      });
-      if (user.code === 11000) {
-        res.status(409);
-        throw new Error('A user with that email already exists');
-      }
-
+      const password = await bcrypt.hash(req.body.password, 10);
+      const user = await userOperations
+        .create({
+          name,
+          email,
+          password,
+        })
+        .catch((err) => {
+          if (err.code === 11000) {
+            res.status(409);
+            throw new Error('A user with that email already exists');
+          }
+        });
       // TODO jwt token and cookie
 
       res.json({ auth: true, name: user.name });
@@ -59,7 +61,7 @@ module.exports = {
   login: asyncHandler(async (req, res) => {
     logger.debug('userController login() start');
     const { email, password } = req.body;
-    const user = userOperations.read({ email });
+    const user = await userOperations.read({ email });
     if (!user) {
       res.status(401);
       throw new Error('Invalid Email');
