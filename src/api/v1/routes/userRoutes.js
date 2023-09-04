@@ -8,9 +8,9 @@ logger.debug('userRouter setup');
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
-router.post('/logout', auth, userController.logout);
-router.post('/update', auth, userController.update);
-router.post('/delete', auth, userController.delete);
+router.get('/logout', auth, userController.logout);
+router.put('/update', auth, userController.update);
+router.delete('/delete/:id', auth, userController.delete);
 router.get('/get', auth, userController.get);
 router.get('/loggedin', auth, userController.loggedin);
 

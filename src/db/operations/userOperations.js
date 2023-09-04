@@ -12,15 +12,14 @@ module.exports = {
     const doc = await userModel.findOne({ ...query });
     return doc;
   },
-  async update(obj) {
+  async update(filter, query) {
     logger.debug('userOperations update');
-    const doc = await userModel.findOneAndUpdate({ email: user.email }, obj);
+    const doc = await userModel.findOneAndUpdate(filter, query, { new: true });
     return doc;
   },
-  async delete(obj) {
+  async delete(id) {
     logger.debug('userOperations delete');
-    const name = obj.name;
-    const doc = await userModel.findOneAndDelete({ email: user.email });
+    const doc = await userModel.findByIdAndDelete(id);
     return doc;
   },
 };

@@ -125,6 +125,9 @@ module.exports = {
       .withMessage(
         'One uppercase, One lowercase and a number. Spaces are not allowed.'
       ),
+    body('confirm-password')
+      .custom((value, { req }) => value === req.body.password)
+      .withMessage('Password not matching'),
 
     asyncHandler(async (req, res) => {
       logger.debug('userController update() start');
@@ -133,8 +136,9 @@ module.exports = {
         res.status(400);
         throw new Error(error.errors[0].msg);
       }
-      const obj = req.body;
-      const doc = await userOperations.update(obj);
+      const { name, email } = req.body;
+      const password = await bcrypt.hash(req.body.password, 10);
+      const doc = await userOperations.update({ email }, { name, password });
       res.json({
         data: doc,
       });
@@ -142,11 +146,8 @@ module.exports = {
   ],
   delete: asyncHandler(async (req, res) => {
     logger.debug('userController delete() start');
-    const obj = req.body;
-    const doc = await userOperations.delete(obj);
-    res.json({
-      data: doc,
-    });
+    const doc = await userOperations.delete(req.params.id);
+    res.redirect(req.baseUrl + '/logout');
   }),
   loggedin: asyncHandler(async (req, res) => {
     res.json({ auth: true, name: req.user.name });
