@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
 const { SECRET } = require('../../../utils/config');
 
-const tokenGenerator = (payload) => {
-  const token = jwt.sign(payload, SECRET, {
+const tokenGenerator = (_id) => {
+  const token = jwt.sign({
+    sub: _id,
+    iat: Date.now(),
+  }, SECRET, {
     expiresIn: '8h',
   });
   return token;

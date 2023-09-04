@@ -8,7 +8,7 @@ module.exports = asyncHandler(async (req, res, next) => {
   logger.info('auth()');
   const token = req.cookies.token;
   if (!token) {
-    res.status(403);
+    res.status(401);
     throw new Error('Unauthorized');
   }
   let decodedToken;

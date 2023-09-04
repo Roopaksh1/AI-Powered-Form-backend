@@ -8,10 +8,11 @@ logger.debug('userRouter setup');
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
-router.get('/logout', auth, userController.logout);
-router.put('/update', auth, userController.update);
-router.delete('/delete/:id', auth, userController.delete);
-router.get('/get', auth, userController.get);
-router.get('/loggedin', auth, userController.loggedin);
+router.get('/login', auth, userController.loggedin);
+router.get('/', auth, userController.get);
+router.post('/logout', auth, userController.logout);
+router.patch('/', auth, userController.update);
+router.delete('/', auth, userController.delete);
+
 
 module.exports = router;
