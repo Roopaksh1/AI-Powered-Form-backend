@@ -148,4 +148,7 @@ module.exports = {
       data: doc,
     });
   }),
+  loggedin: asyncHandler(async (req, res) => {
+    res.json({ auth: true, name: req.user.name });
+  }),
 };

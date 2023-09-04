@@ -12,5 +12,6 @@ router.post('/logout', auth, userController.logout);
 router.post('/update', auth, userController.update);
 router.post('/delete', auth, userController.delete);
 router.get('/get', auth, userController.get);
+router.get('/loggedin', auth, userController.loggedin);
 
 module.exports = router;
