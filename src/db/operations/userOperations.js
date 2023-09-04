@@ -9,7 +9,7 @@ module.exports = {
   },
   async read(user) {
     logger.debug('userOperations read');
-    const doc = await userModel.findOne({ email: user.email });
+    const doc = await userModel.findOne({ _id: user._id });
     return doc;
   },
   async update(obj) {

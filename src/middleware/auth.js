@@ -4,7 +4,12 @@ const logger = require("../utils/logger");
 module.exports = async (req, res, next) => {
   logger.info("auth()")
   try {
-    const token = await req.headers.authorization.split(" ")[1];
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(403).send({
+        error: new Error("unauthorized")
+      });
+    }
     const decodedToken = await jwt.verify(token, process.env.TOKEN);
     const userId = await decodedToken.userId;
     req.userId = userId;
