@@ -4,13 +4,13 @@ const router = express.Router();
 const auth = require('../../../middleware/auth');
 const logger = require('../../../utils/logger');
 
-logger.debug("userRouter setup");
+logger.debug('userRouter setup');
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.post('/logout', auth, userController.logout);
-router.post('/update', auth,userController.update);
-router.post('/delete', auth,userController.delete);
-router.post('/get', auth, userController.get);
+router.post('/update', auth, userController.update);
+router.post('/delete', auth, userController.delete);
+router.get('/get', auth, userController.get);
 
 module.exports = router;

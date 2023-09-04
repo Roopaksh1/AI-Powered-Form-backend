@@ -7,9 +7,9 @@ module.exports = {
     const doc = await userModel.create(obj);
     return doc;
   },
-  async read(user) {
+  async read(query) {
     logger.debug('userOperations read');
-    const doc = await userModel.findOne({ _id: user._id });
+    const doc = await userModel.findOne({ ...query });
     return doc;
   },
   async update(obj) {

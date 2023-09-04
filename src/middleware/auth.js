@@ -1,22 +1,24 @@
-const jwt = require("jsonwebtoken");
-const logger = require("../utils/logger");
+const jwt = require('jsonwebtoken');
+const logger = require('../utils/logger');
+const { SECRET } = require('../utils/config');
+const asyncHandler = require('express-async-handler');
+const User = require('../db/models/userModel');
 
-module.exports = async (req, res, next) => {
-  logger.info("auth()")
-  try {
-    const token = req.cookies.token;
-    if (!token) {
-      return res.status(403).send({
-        error: new Error("unauthorized")
-      });
-    }
-    const decodedToken = await jwt.verify(token, process.env.TOKEN);
-    const userId = await decodedToken.userId;
-    req.userId = userId;
-    next();
-  } catch (error) {
-    res.status(401).json({
-      error: new Error("Invalid request!"),
-    });
+module.exports = asyncHandler(async (req, res, next) => {
+  logger.info('auth()');
+  const token = req.cookies.token;
+  if (!token) {
+    res.status(403);
+    throw new Error('Unauthorized');
   }
-};
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(token, SECRET);
+  } catch (err) {
+    res.status(401);
+    throw new Error(err.message);
+  }
+  const user = await User.findById(decodedToken.sub);
+  req.user = user;
+  next();
+});

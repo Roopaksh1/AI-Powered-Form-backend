@@ -1,6 +1,7 @@
 require('dotenv').config();
-const { default: mongoose } = require("mongoose");
+const { default: mongoose } = require('mongoose');
+const { MONGODB } = require('../utils/config');
 
-mongoose.connect(process.env.MONGODB);
+mongoose.connect(MONGODB);
 
 module.exports = mongoose;
