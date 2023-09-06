@@ -8,7 +8,6 @@ logger.debug('userRouter setup');
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
-router.get('/login', auth, userController.loggedin);
 router.get('/', auth, userController.get);
 router.post('/logout', auth, userController.logout);
 router.put('/', auth, userController.update);

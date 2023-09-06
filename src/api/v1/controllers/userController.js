@@ -134,7 +134,4 @@ module.exports = {
     const doc = await userOperations.delete(req.userid);
     res.status(200).redirect(req.baseUrl + '/logout');
   }),
-  loggedin: asyncHandler(async (req, res) => {
-    res.status(200).json({ name: req.user.name });
-  }),
 };
