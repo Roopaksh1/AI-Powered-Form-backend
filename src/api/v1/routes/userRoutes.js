@@ -11,7 +11,7 @@ router.post('/login', userController.login);
 router.get('/login', auth, userController.loggedin);
 router.get('/', auth, userController.get);
 router.post('/logout', auth, userController.logout);
-router.patch('/', auth, userController.update);
+router.put('/', auth, userController.update);
 router.delete('/', auth, userController.delete);
 
 
