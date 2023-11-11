@@ -30,5 +30,8 @@
     "mongoose": "^7.4.2",
     "pino": "^8.15.0",
     "pino-pretty": "^10.2.0"
+  },
+  "devDependencies": {
+    "openai": "^4.17.4"
   }
 }
