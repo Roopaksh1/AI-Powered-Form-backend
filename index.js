@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/v1/user', require('./src/api/v1/routes/userRoutes'));
+app.use('/v1/form', require('./src/api/v1/routes/formRoutes'));
 app.use('*', require('./src/middleware/error'));
 
 app.listen(PORT, () => {
