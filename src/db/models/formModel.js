@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const formSchema = mongoose.Schema({
+const questionSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -11,6 +12,18 @@ const formSchema = mongoose.Schema({
   },
   isRequired: {
     type: Boolean,
+    required: true,
+  },
+});
+
+const formSchema = new Schema({
+  category: {
+    type: String,
+    required: true,
+    lowercase: true,
+  },
+  question: {
+    type: [questionSchema],
     required: true,
   },
 });
