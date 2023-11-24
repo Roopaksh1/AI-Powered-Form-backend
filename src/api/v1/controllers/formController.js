@@ -1,16 +1,15 @@
 const asyncHandler = require('express-async-handler');
 const { ADMIN_PASS } = require('../../../utils/config');
 const Form = require('../../../db/models/formModel');
-const similarity = require('similarity');
-
+const { distance } = require('fastest-levenshtein');
 module.exports = {
   getQueryResponse: asyncHandler(async (req, res) => {
     const categories = await Form.find({});
     let doc = {};
-    let max = 0;
+    let min = Infinity;
     categories.forEach((c) => {
-      if (max < similarity(c.category, req.params.id)) {
-        max = similarity(c.category, req.params.id);
+      if (min > distance(c.category, req.params.id)) {
+        min = distance(c.category, req.params.id);
         doc = c;
       }
     });
@@ -66,7 +65,6 @@ module.exports = {
     const doc = req.user.forms.filter((f) => f.formSchema._id != id);
     req.user.forms = doc;
     await req.user.save();
-    console.log(req.user.forms);
     res.status(200).json({ message: 'deleted successfully' });
   }),
 };
