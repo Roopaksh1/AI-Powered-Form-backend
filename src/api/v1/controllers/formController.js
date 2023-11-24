@@ -1,5 +1,4 @@
 const asyncHandler = require('express-async-handler');
-const openai = require('./openaiConfig');
 const { ADMIN_PASS } = require('../../../utils/config');
 const Form = require('../../../db/models/formModel');
 const similarity = require('similarity');

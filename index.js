@@ -6,7 +6,7 @@ const { PORT } = require('./src/utils/config');
 const app = express();
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://aiform.netlify.app/'],
+    origin: ['http://localhost:5173', 'https://aiform.netlify.app'],
     credentials: true,
   })
 );
