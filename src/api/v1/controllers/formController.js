@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const { ADMIN_PASS } = require('../../../utils/config');
 const Form = require('../../../db/models/formModel');
+const User = require('../../../db/models/userModel');
 const { distance } = require('fastest-levenshtein');
 module.exports = {
   getQueryResponse: asyncHandler(async (req, res) => {
@@ -66,5 +67,17 @@ module.exports = {
     req.user.forms = doc;
     await req.user.save();
     res.status(200).json({ message: 'deleted successfully' });
+  }),
+
+  getPublicForm: asyncHandler(async (req, res) => {
+    const userID = req.params.userID;
+    const formID = req.params.formID;
+    const user = await User.findById(userID);
+    const doc = user.forms.filter((f) => f.formSchema._id == formID);
+    if (doc.length) {
+      res.status(200).json({ form: doc });
+    } else {
+      res.status(404).json({ message: 'Not Found' });
+    }
   }),
 };
