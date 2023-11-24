@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const openai = require('./openaiConfig');
 const { ADMIN_PASS } = require('../../../utils/config');
 const Form = require('../../../db/models/formModel');
+const similarity = require('similarity');
 
 module.exports = {
   getQueryResponse: asyncHandler(async (req, res) => {
@@ -12,31 +13,50 @@ module.exports = {
     // });
 
     // res.status(200).json(completion.choices[0]);
-    const re = new RegExp(req.params.id, 'i');
-    const categories = await Form.find({ category: re });
-    console.log(categories[0].question);
+    const categories = await Form.find({});
+    let doc = {};
+    let max = 0;
+    categories.forEach((c) => {
+      if (max < similarity(c.category, req.params.id)) {
+        max = similarity(c.category, req.params.id);
+        doc = c;
+      }
+    });
+    if (Object.keys(doc).length != 0) {
+      const formSchema = { title: doc.category, fields: doc.fields };
+      req.user.forms.push({ formSchema });
+      await req.user.save();
+      res.status(200).json({ title: doc.category, fields: doc.fields });
+    } else {
+      res.status(404).json({ message: 'Not Found' });
+    }
   }),
 
-  getImageResponse: asyncHandler(async (req, res) => {
-    console.log(req.params.id);
+  getForm: asyncHandler(async (req, res) => {
+    const forms = req.user.forms.map((f) => f.formSchema);
+    res.status(200).json({ forms });
   }),
 
   addForm: asyncHandler(async (req, res) => {
     if (req.body.password == ADMIN_PASS) {
-      const { category, name, label, isRequired } = req.body.formData;
-      const question = {
+      const { category, name, component, label, isRequired } =
+        req.body.formData;
+      const fields = {
         name,
+        component,
         label,
         isRequired,
       };
-      const categories = await Form.findOne({ category: category.toLowerCase() });
+      const categories = await Form.findOne({
+        category: category.toLowerCase(),
+      });
       if (!categories) {
         const form = await Form.create({
           category,
-          question,
+          fields,
         });
       } else {
-        categories.question.push(question);
+        categories.fields.push(fields);
         await categories.save();
       }
       res.status(200).json({ message: 'Database updated' });
@@ -44,4 +64,6 @@ module.exports = {
       res.status(401).json({ message: 'invalid password' });
     }
   }),
+
+  deleteFormForUser: asyncHandler(async (req, res) => {}),
 };
