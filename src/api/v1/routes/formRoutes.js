@@ -6,5 +6,6 @@ const auth = require('../../../middleware/auth');
 route.get('/query/:id', auth, formController.getQueryResponse);
 route.get('/', auth, formController.getForm);
 route.post('/', formController.addForm);
+route.delete('/:id', auth, formController.deleteFormForUser);
 
 module.exports = route;
