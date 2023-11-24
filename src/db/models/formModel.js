@@ -6,6 +6,10 @@ const questionSchema = new Schema({
     type: String,
     required: true,
   },
+  component: {
+    type: String,
+    required: true,
+  },
   label: {
     type: String,
     required: true,
@@ -22,7 +26,7 @@ const formSchema = new Schema({
     required: true,
     lowercase: true,
   },
-  question: {
+  fields: {
     type: [questionSchema],
     required: true,
   },
