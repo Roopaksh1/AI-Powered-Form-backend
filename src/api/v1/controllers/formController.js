@@ -2,15 +2,16 @@ const asyncHandler = require('express-async-handler');
 const { ADMIN_PASS } = require('../../../utils/config');
 const Form = require('../../../db/models/formModel');
 const User = require('../../../db/models/userModel');
-const { distance } = require('fastest-levenshtein');
+const { fuzzy } = require('fast-fuzzy');
 module.exports = {
   getQueryResponse: asyncHandler(async (req, res) => {
     const categories = await Form.find({});
     let doc = {};
-    let min = Infinity;
+    let max = -Infinity;
+    console.log(req.params.id);
     categories.forEach((c) => {
-      if (min > distance(c.category, req.params.id)) {
-        min = distance(c.category, req.params.id);
+      if (max < fuzzy(c.category, req.params.id)) {
+        max = fuzzy(c.category, req.params.id);
         doc = c;
       }
     });
@@ -18,11 +19,12 @@ module.exports = {
       const formSchema = {
         title: doc.category,
         fields: doc.fields,
-        _id: doc._id,
       };
       req.user.forms.push({ formSchema });
       await req.user.save();
-      res.status(200).json({ formSchema });
+      res.status(200).json({
+        formSchema: req.user.forms[req.user.forms.length - 1].formSchema,
+      });
     } else {
       res.status(404).json({ message: 'Not Found' });
     }
