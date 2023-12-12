@@ -82,4 +82,28 @@ module.exports = {
       res.status(404).json({ message: 'Not Found' });
     }
   }),
+
+  submitForm: asyncHandler(async (req, res) => {
+    const userID = req.params.userID;
+    const formID = req.params.formID;
+    if (Object.keys(req.body).length == 0) {
+      res.status(400).json({ message: 'Invalid Data' });
+    } else {
+      const user = await User.findById(userID);
+      let idx;
+      const doc = user.forms.filter((f, index) => {
+        if (f.formSchema._id == formID) {
+          idx = index;
+          return true;
+        }
+        return false;
+      });
+
+      doc[0].result.push(req.body);
+      user.forms[idx].result = doc[0].result;
+      await user.save;
+      console.log(user.forms[idx].result);
+      res.status(200).json('Form submitted successfully');
+    }
+  }),
 };

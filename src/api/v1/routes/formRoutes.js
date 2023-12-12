@@ -8,5 +8,7 @@ route.get('/', auth, formController.getForm);
 route.post('/', formController.addForm);
 route.delete('/:id', auth, formController.deleteFormForUser);
 route.get('/:userID/:formID', formController.getPublicForm);
+route.post('/:userID/:formID', formController.submitForm);
+
 
 module.exports = route;
