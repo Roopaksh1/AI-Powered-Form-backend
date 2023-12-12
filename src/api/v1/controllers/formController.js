@@ -101,9 +101,14 @@ module.exports = {
 
       doc[0].result.push(req.body);
       user.forms[idx].result = doc[0].result;
-      await user.save;
-      console.log(user.forms[idx].result);
+      await user.save();
       res.status(200).json('Form submitted successfully');
     }
+  }),
+
+  getResult: asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    const doc = req.user.forms.filter((f) => f.formSchema._id == id);
+    res.status(200).json(doc[0].result);
   }),
 };
